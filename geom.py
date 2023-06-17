@@ -60,12 +60,51 @@ class Geom:
     def intersects_circle_segment_circle_segment(a_center: Vector2, a_radius: float, a_start_angle: float,
                                                  a_stop_angle: float, b_center: Vector2, b_radius: float,
                                                  b_start_angle: float, b_stop_angle: float, epsilon: float = 0.01) -> (
-            int, Vector2):
-        # https://www.petercollingridge.co.uk/tutorials/computational-geometry/circle-circle-intersections/
+            bool, Vector2):
+        intersections_found, i1, i2 = Geom.intersects_circle_circle(a_center, a_radius, b_center, b_radius, epsilon)
+
+        if intersections_found == 0:
+            return 0, None
+
+        i1_angle_circle_a = Geom.full_angle_to_horizon(i1 - a_center)
+        i2_angle_circle_a = Geom.full_angle_to_horizon(i2 - a_center)
+        i1_angle_circle_b = Geom.full_angle_to_horizon(i1 - b_center)
+        i2_angle_circle_b = Geom.full_angle_to_horizon(i2 - b_center)
+        i1_satisfies_a_angles = Geom._satisfies_angles(a_start_angle, a_stop_angle, i1_angle_circle_a)
+        i2_satisfies_a_angles = Geom._satisfies_angles(a_start_angle, a_stop_angle, i2_angle_circle_a)
+        i1_satisfies_b_angles = Geom._satisfies_angles(b_start_angle, b_stop_angle, i1_angle_circle_b)
+        i2_satisfies_b_angles = Geom._satisfies_angles(b_start_angle, b_stop_angle, i2_angle_circle_b)
+
+        if i1_satisfies_a_angles and i1_satisfies_b_angles:
+            return True, i1
+        if i2_satisfies_a_angles and i2_satisfies_b_angles:
+            return True, i2
+
         return None, None
 
     @staticmethod
-    def intersects_circle_circle(a_center: Vector2, a_radius: float, b_center: Vector2, b_radius: float, epsilon: float = 0.01) -> (int, Vector2, Vector2):
+    def _satisfies_angles(start_angle, stop_angle, intersection_angle) -> bool:
+        if start_angle < stop_angle and start_angle < intersection_angle < stop_angle:
+            return True
+        elif start_angle > stop_angle and (start_angle < intersection_angle or intersection_angle < stop_angle):
+            return True
+        return False
+
+    @staticmethod
+    def intersects_circle_circle(a_center: Vector2, a_radius: float, b_center: Vector2, b_radius: float,
+                                 epsilon: float = 0.01) -> (int, Vector2, Vector2):
+        """
+        Computes the intersection points between two circles given by a_center with a_radius and b_center with b_radius.
+        Implementation based on
+        https://www.petercollingridge.co.uk/tutorials/computational-geometry/circle-circle-intersections/
+        :param a_center: Center of circle A
+        :param a_radius: Radius of circle A
+        :param b_center: Center of circle B
+        :param b_radius: Radius of circle B
+        :param epsilon: Epsilon value
+        :return: 1. The number of intersections found; 2. The first intersection, or None; 3. The second intersection,
+            or None
+        """
         # Compute distance between centers
         dx = a_center.x - b_center.x
         dy = a_center.y - b_center.y
@@ -77,13 +116,15 @@ class Geom:
         if d < math.fabs(a_radius - b_radius):
             return 0, None, None
 
-        dx = dx / d
-        dy = dy / d
+        # Compute a and h values, as described in the documentation link
         a = ((a_radius * a_radius) - (b_radius * b_radius) + (d * d)) / (2 * d)
         h = math.sqrt((a_radius * a_radius) - (a * a))
 
+        # Compute the coordinate of the line of intersection and the connecting vector between A and B
         v = (b_center - a_center).normalize()
         p = a_center + v * a
+
+        # Compute the intersection points based on the intersection line
         p1 = p + h * VectorUtil.rotate_clockwise(v)
         p2 = p + h * VectorUtil.rotate_counter_clockwise(v)
 
