@@ -36,7 +36,7 @@ _, track4 = network.build_track(node2, track1, CurvedTrackOptions(Direction.LEFT
 
 network.add_track(track1)
 network.add_track(track2)
-node5, track3 = network.build_track(node4, track2, CurvedTrackOptions(Direction.RIGHT, 300, math.pi / 3))
+node5, track3 = network.build_track(node4, track2, StraightTrackOptions(300))
 
 
 builder = DefaultTrackBuilder(network, track1, node2, in_compass_direction=True)

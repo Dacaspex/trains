@@ -1,5 +1,6 @@
 import math
 from pygame import Vector2
+from debug import Debug
 
 
 class Geom:
@@ -50,8 +51,10 @@ class Geom:
             i2_on_circle_segment = start_angle <= Geom.full_angle_to_horizon(i2 - center) <= stop_angle
 
             if i1_on_lin_segment and i1_on_circle_segment:
+                Debug.circle(i1, 5)
                 return True, i1
             elif i2_on_line_segment and i2_on_circle_segment:
+                Debug.circle(i2, 5)
                 return True, i2
             else:
                 return False, None

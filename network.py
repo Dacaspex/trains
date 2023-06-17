@@ -138,16 +138,32 @@ class Network:
             self.nodes.append(new_track.node_b)
 
         # Check whether track overlaps any other track
-
+        intersects = False
         for track in self.tracks:
             intersects, coord = util.intersects_track(new_track, track)
+            # TODO: Return all intersection points and iterate over the valid ones
             if intersects:
-                Debug.circle(coord, 5)
-                # Split track and new_track on point coord
+                Debug.circle(coord, 10)
+                if not self._is_valid_intersection(coord):
+                    continue
+                # Split track
+                if isinstance(new_track, StraightTrack):
+                    node_split = Node(self.canvas, coord)
+                    track_a = StraightTrack(self.canvas, new_track.node_a, node_split)
+                    track_b = StraightTrack(self.canvas, new_track.node_b, node_split)
+                    self._add_track(track_a, skip_check_node_a=True)
+                    self._add_track(track_b, skip_check_node_a=True)
+                elif isinstance(new_track, CurvedTrack):
+                    pass
 
-        self.tracks.append(new_track)
+        if not intersects:
+            self.tracks.append(new_track)
 
-        pass
+    def _is_valid_intersection(self, coord: pygame.Vector2):
+        for node in self.nodes:
+            if util.are_close(node.position, coord):
+                return False
+        return True
 
     def _add_straight_track(self, source_node: Node, source_track: Track, options: StraightTrackOptions) \
             -> (Node, StraightTrack):
