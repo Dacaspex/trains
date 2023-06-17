@@ -11,8 +11,10 @@ import math
 
 pygame.init()
 
-SCREEN_WIDTH    = 1000
-SCREEN_HEIGHT   = 800
+# SCREEN_WIDTH    = 1000
+# SCREEN_HEIGHT   = 800
+SCREEN_WIDTH    = 1400
+SCREEN_HEIGHT   = 1000
 GRID_DIMENSION  = 200
 background_color = (25, 25, 25)
 white = (255, 255, 255)

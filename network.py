@@ -10,6 +10,11 @@ ids = {
     'node': 0
 }
 
+# TRACK_WIDTH = 3
+# NODE_SIZE   = 8
+TRACK_WIDTH = 6
+NODE_SIZE   = 16
+
 
 class Direction:
     RIGHT = 1
@@ -42,7 +47,7 @@ class Track:
         self.node_a = node_a
         self.node_b = node_b
         self.color = (255, 255, 255)
-        self.width = 3
+        self.width = TRACK_WIDTH
 
     def get_direction_vector(self, node) -> pygame.Vector2:
         pass
@@ -93,7 +98,7 @@ class Node:
         self.canvas = canvas
         self.position = position
         self.color = (75, 75, 75)
-        self.size = 8
+        self.size = NODE_SIZE
 
     def draw(self, surface):
         self.canvas.circle(surface, self.position, self.size, self.color)
@@ -138,17 +143,19 @@ class Network:
             self.nodes.append(new_track.node_b)
 
         # Check whether track overlaps any other track
-        intersects = False
+        track_invalid = False
         for track in self.tracks:
-            intersects, coord = util.intersects_track(new_track, track)
-            # TODO: Return all intersection points and iterate over the valid ones
-            if intersects:
-                Debug.circle(coord, 10)
-                if not self._is_valid_intersection(coord):
+            intersects, intersections = util.intersects_track(new_track, track)
+            if not intersects:
+                continue
+
+            for intersection in intersections:
+                if not self._is_valid_intersection(intersection):
                     continue
+                track_invalid = True
                 # Split track
                 if isinstance(new_track, StraightTrack):
-                    node_split = Node(self.canvas, coord)
+                    node_split = Node(self.canvas, intersection)
                     track_a = StraightTrack(self.canvas, new_track.node_a, node_split)
                     track_b = StraightTrack(self.canvas, new_track.node_b, node_split)
                     self._add_track(track_a, skip_check_node_a=True)
@@ -156,7 +163,7 @@ class Network:
                 elif isinstance(new_track, CurvedTrack):
                     pass
 
-        if not intersects:
+        if not track_invalid:
             self.tracks.append(new_track)
 
     def _is_valid_intersection(self, coord: pygame.Vector2):

@@ -18,7 +18,7 @@ def are_close(a: Vector2, b: Vector2, epsilon: float = 0.001) -> bool:
     return a.distance_to(b) < epsilon
 
 
-def intersects_track(a: Track, b: Track) -> (bool, Vector2):
+def intersects_track(a: Track, b: Track) -> (bool, list):
     if isinstance(a, StraightTrack) and isinstance(b, StraightTrack):
         return Geom.intersects_line_segment_line_segment(a.node_a.position, a.node_b.position, b.node_a.position,
                                                          b.node_b.position)
@@ -32,4 +32,4 @@ def intersects_track(a: Track, b: Track) -> (bool, Vector2):
         return Geom.intersects_circle_segment_circle_segment(a.center, a.radius, a.start_angle, a.stop_angle, b.center,
                                                              b.radius, b.start_angle, b.stop_angle)
     else:
-        return False, None
+        return False, []
