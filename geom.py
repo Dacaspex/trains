@@ -62,48 +62,32 @@ class Geom:
                                                  b_start_angle: float, b_stop_angle: float, epsilon: float = 0.01) -> (
             int, Vector2):
         # https://www.petercollingridge.co.uk/tutorials/computational-geometry/circle-circle-intersections/
+        return None, None
 
-        # ChatGPT
-        # Calculate the coordinates of the center of the first circle segment
-        x1 = a_center.x
-        y1 = a_center.y
-        x2 = b_center.x
-        y2 = b_center.y
-        r1 = a_radius
-        r2 = b_radius
-        start_angle1 = a_start_angle
-        end_angle1 = a_stop_angle
-        start_angle2 = b_start_angle
-        end_angle2 = b_stop_angle
+    @staticmethod
+    def intersects_circle_circle(a_center: Vector2, a_radius: float, b_center: Vector2, b_radius: float, epsilon: float = 0.01) -> (int, Vector2, Vector2):
+        # Compute distance between centers
+        dx = a_center.x - b_center.x
+        dy = a_center.y - b_center.y
+        d = math.sqrt(dx * dx + dy * dy)
 
-        cx1 = x1 + r1 * math.cos(math.radians(start_angle1 + (end_angle1 - start_angle1) / 2))
-        cy1 = y1 + r1 * math.sin(math.radians(start_angle1 + (end_angle1 - start_angle1) / 2))
+        # TODO: introduce epsilon here
+        if d > a_radius + b_radius:
+            return 0, None, None
+        if d < math.fabs(a_radius - b_radius):
+            return 0, None, None
 
-        # Calculate the coordinates of the center of the second circle segment
-        cx2 = x2 + r2 * math.cos(math.radians(start_angle2 + (end_angle2 - start_angle2) / 2))
-        cy2 = y2 + r2 * math.sin(math.radians(start_angle2 + (end_angle2 - start_angle2) / 2))
+        dx = dx / d
+        dy = dy / d
+        a = ((a_radius * a_radius) - (b_radius * b_radius) + (d * d)) / (2 * d)
+        h = math.sqrt((a_radius * a_radius) - (a * a))
 
-        # Calculate the distance between the centers of the two circle segments
-        distance = math.sqrt((cx2 - cx1) ** 2 + (cy2 - cy1) ** 2)
+        v = (b_center - a_center).normalize()
+        p = a_center + v * a
+        p1 = p + h * VectorUtil.rotate_clockwise(v)
+        p2 = p + h * VectorUtil.rotate_counter_clockwise(v)
 
-        # Check if the two circle segments are separate or if one is completely contained within the other
-        if distance >= r1 + r2 or distance <= abs(r1 - r2):
-            return 0, None
-
-        # Calculate the angle between the line connecting the centers and the x-axis for the first circle segment
-        theta1 = math.atan2(cy1 - y1, cx1 - x1)
-
-        # Calculate the angle between the line connecting the centers and the x-axis for the second circle segment
-        theta2 = math.atan2(cy2 - y2, cx2 - x2)
-
-        # Calculate the angles of the intersection points
-        delta_theta = math.acos((r1 ** 2 + distance ** 2 - r2 ** 2) / (2 * r1 * distance))
-
-        # Calculate the intersection points
-        i1 = Vector2(x1 + r1 * math.cos(theta1 + delta_theta), y1 + r1 * math.sin(theta1 + delta_theta))
-        i2 = Vector2(x1 + r1 * math.cos(theta1 - delta_theta), y1 + r1 * math.sin(theta1 - delta_theta))
-
-        return 2, i2
+        return 2, p1, p2
 
     @staticmethod
     def intersects_line_circle(p1: Vector2, p2: Vector2, center: Vector2, radius: float, epsilon: float = 0.01) -> (

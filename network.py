@@ -141,7 +141,6 @@ class Network:
 
         for track in self.tracks:
             intersects, coord = util.intersects_track(new_track, track)
-            print(intersects, coord)
             if intersects:
                 Debug.circle(coord, 5)
                 # Split track and new_track on point coord
