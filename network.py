@@ -166,7 +166,14 @@ class Network:
                     self._add_track(track_a, skip_check_node_a=True)
                     self._add_track(track_b, skip_check_node_a=True, skip_check_node_b=True)
                 elif isinstance(new_track, CurvedTrack):
-                    pass
+                    split_angle = Geom.full_angle_to_horizon(intersection - new_track.center)
+                    start_angle = new_track.start_angle if new_track.start_angle < new_track.stop_angle else new_track.stop_angle
+                    stop_angle = new_track.stop_angle if new_track.start_angle < new_track.stop_angle else new_track.start_angle
+                    track_a = CurvedTrack(self.canvas, new_track.node_a, node_split, new_track.center, new_track.radius, start_angle, split_angle)
+                    track_b = CurvedTrack(self.canvas, new_track.node_b, node_split, new_track.center, new_track.radius,
+                                          split_angle, stop_angle)
+                    self._add_track(track_a, skip_check_node_a=True)
+                    self._add_track(track_b, skip_check_node_a=True, skip_check_node_b=True)
 
                 track_to_remove.append(track)
                 if isinstance(track, StraightTrack):
@@ -176,7 +183,13 @@ class Network:
                     self._add_track(track_b, skip_check_node_a=True, skip_check_node_b=True, skip_check_intersections=True)
                     pass
                 elif isinstance(track, CurvedTrack):
-                    pass
+                    split_angle = Geom.full_angle_to_horizon(intersection - track.center)
+                    track_a = CurvedTrack(self.canvas, track.node_a, node_split, track.center, track.radius, track.start_angle, split_angle)
+                    track_b = CurvedTrack(self.canvas, track.node_b, node_split, track.center, track.radius,
+                                          split_angle, track.stop_angle)
+                    self._add_track(track_a, skip_check_node_a=True, skip_check_node_b=True, skip_check_intersections=True)
+                    self._add_track(track_b, skip_check_node_a=True, skip_check_node_b=True,
+                                    skip_check_intersections=True)
 
         for track in track_to_remove:
             self.tracks.remove(track)

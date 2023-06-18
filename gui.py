@@ -1,6 +1,6 @@
 import pygame
 from input import Mouse
-from network import Network
+from network import Network, StraightTrack, CurvedTrack
 from geom import Geom
 from canvas import Canvas
 
@@ -12,7 +12,7 @@ class Gui:
     INFO_SCREEN_PADDING = 25
     INFO_SCREEN_COLOR = (40, 40, 40)
     INFO_SCREEN_BORDER_RADIUS = 5
-    MOUSE_HIT_AREA = 20
+    MOUSE_HIT_AREA = 30
     SELECTED_TRACK_COLOR = (100, 255, 100)
 
     def __init__(self, mouse: Mouse, font: pygame.font.Font, canvas: Canvas, screen_width: int, screen_height: int, network: Network):
@@ -29,7 +29,12 @@ class Gui:
         mouse_position = self.mouse.current_position - self.canvas.offset
         mouse_circle_center = pygame.Vector2(mouse_position[0], -mouse_position[1])
         for track in self.network.tracks:
-            intersects, _ = Geom.intersects_line_segment_circle(track.node_a.position, track.node_b.position, mouse_circle_center, self.MOUSE_HIT_AREA)
+            intersects = False
+            if isinstance(track, StraightTrack):
+                intersects, _ = Geom.intersects_line_segment_circle(track.node_a.position, track.node_b.position, mouse_circle_center, self.MOUSE_HIT_AREA)
+            elif isinstance(track, CurvedTrack):
+                intersects, _ = Geom.intersects_circle_segment_circle(track.center, track.radius, track.start_angle, track.stop_angle, mouse_circle_center, self.MOUSE_HIT_AREA)
+
             if intersects:
                 selected_track = track
                 break
@@ -48,4 +53,8 @@ class Gui:
         pygame.draw.rect(screen, self.INFO_SCREEN_COLOR, (container_x, container_y, self.INFO_SCREEN_WIDTH, container_h),
                          border_radius=self.INFO_SCREEN_BORDER_RADIUS)
         screen.blit(text, (text_x, text_y))
-        self.canvas.line(screen, selected_track.node_a.position, selected_track.node_b.position, self.SELECTED_TRACK_COLOR, selected_track.width)
+
+        if isinstance(selected_track, StraightTrack):
+            self.canvas.line(screen, selected_track.node_a.position, selected_track.node_b.position, self.SELECTED_TRACK_COLOR, selected_track.width)
+        elif isinstance(selected_track, CurvedTrack):
+            self.canvas.arc(screen, selected_track.center, selected_track.radius, selected_track.start_angle, selected_track.stop_angle, self.SELECTED_TRACK_COLOR, selected_track.width)

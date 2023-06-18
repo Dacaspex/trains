@@ -1,6 +1,7 @@
 import pygame
 
 import util
+import math
 from network import Network, StraightTrack, CurvedTrack, Node, StraightTrackOptions, CurvedTrackOptions, Direction
 from trackset import DefaultTrackBuilder
 from grid import Grid
@@ -36,12 +37,13 @@ node3 = Node(canvas, pygame.Vector2(500, 50))
 node4 = Node(canvas, pygame.Vector2(350, 175))
 track1 = StraightTrack(canvas, node1, node2)
 track2 = StraightTrack(canvas, node3, node4)
-# _, track4 = network.build_track(node2, track1, CurvedTrackOptions(Direction.LEFT, 400, math.pi / 3))
-_, track4 = network.build_track(node2, track1, StraightTrackOptions(300))
+_, track4 = network.build_track(node2, track1, CurvedTrackOptions(Direction.LEFT, 400, math.pi / 3))
+# _, track4 = network.build_track(node2, track1, StraightTrackOptions(300))
 
 network.add_track(track1)
 network.add_track(track2)
-node5, track3 = network.build_track(node4, track2, StraightTrackOptions(300))
+# node5, track3 = network.build_track(node4, track2, StraightTrackOptions(300))
+node5, track3 = network.build_track(node4, track2, CurvedTrackOptions(Direction.RIGHT, 400, math.pi / 4))
 
 print(len(network.tracks))
 
