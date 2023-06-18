@@ -90,6 +90,10 @@ class Geom:
         return len(true_intersections) > 0, true_intersections
 
     @staticmethod
+    def intersects_line_segment_circle(p1: Vector2, p2: Vector2, center: Vector2, radius: float, epsilon: float = 0.01) -> (bool, list):
+        return Geom.intersects_line_segment_circle_segment(p1, p2, center, radius, 0, 2 * math.pi, epsilon)
+
+    @staticmethod
     def intersects_circle_circle(a_center: Vector2, a_radius: float, b_center: Vector2, b_radius: float,
                                  epsilon: float = 0.01) -> (bool, list):
         """
@@ -169,6 +173,7 @@ class Geom:
         elif start_angle > stop_angle and (start_angle < intersection_angle or intersection_angle < stop_angle):
             return True
         return False
+
 
 class VectorUtil:
     @staticmethod

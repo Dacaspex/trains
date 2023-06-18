@@ -125,7 +125,7 @@ class Network:
         self._add_track(new_track, skip_check_node_a=True)
         return new_node, new_track
 
-    def _add_track(self, new_track: Track, skip_check_node_a=False, skip_check_node_b=False):
+    def _add_track(self, new_track: Track, skip_check_node_a=False, skip_check_node_b=False, skip_check_intersections=False):
         # Check whether nodes are duplicates of other nodes
         for node in self.nodes:
             if not skip_check_node_a:
@@ -143,7 +143,12 @@ class Network:
             self.nodes.append(new_track.node_b)
 
         # Check whether track overlaps any other track
+        if skip_check_intersections:
+            self.tracks.append(new_track)
+            return
+
         track_invalid = False
+        track_to_remove = []
         for track in self.tracks:
             intersects, intersections = util.intersects_track(new_track, track)
             if not intersects:
@@ -154,14 +159,27 @@ class Network:
                     continue
                 track_invalid = True
                 # Split track
+                node_split = Node(self.canvas, intersection)
                 if isinstance(new_track, StraightTrack):
-                    node_split = Node(self.canvas, intersection)
                     track_a = StraightTrack(self.canvas, new_track.node_a, node_split)
                     track_b = StraightTrack(self.canvas, new_track.node_b, node_split)
                     self._add_track(track_a, skip_check_node_a=True)
-                    self._add_track(track_b, skip_check_node_a=True)
+                    self._add_track(track_b, skip_check_node_a=True, skip_check_node_b=True)
                 elif isinstance(new_track, CurvedTrack):
                     pass
+
+                track_to_remove.append(track)
+                if isinstance(track, StraightTrack):
+                    track_a = StraightTrack(self.canvas, track.node_a, node_split)
+                    track_b = StraightTrack(self.canvas, track.node_b, node_split)
+                    self._add_track(track_a, skip_check_node_a=True, skip_check_node_b=True, skip_check_intersections=True)
+                    self._add_track(track_b, skip_check_node_a=True, skip_check_node_b=True, skip_check_intersections=True)
+                    pass
+                elif isinstance(track, CurvedTrack):
+                    pass
+
+        for track in track_to_remove:
+            self.tracks.remove(track)
 
         if not track_invalid:
             self.tracks.append(new_track)
