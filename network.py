@@ -92,6 +92,20 @@ class CurvedTrack(Track):
         self.canvas.arc(surface, self.center, self.radius, self.start_angle, self.stop_angle, self.color, self.width)
 
 
+class Connections:
+    def __init__(self):
+        self.tracks = {}
+
+    def add(self, track: Track):
+        self.tracks[track] = []
+
+    def connect(self):
+        pass
+
+    def remove(self, track: Track):
+        del self.tracks[track]
+
+
 class Node:
     def __init__(self, canvas, position: pygame.Vector2):
         self.id = get_id('node')
@@ -99,6 +113,7 @@ class Node:
         self.position = position
         self.color = (75, 75, 75)
         self.size = NODE_SIZE
+        self.connections = Connections()
 
     def draw(self, surface):
         self.canvas.circle(surface, self.position, self.size, self.color)
@@ -145,6 +160,8 @@ class Network:
         # Check whether track overlaps any other track
         if skip_check_intersections:
             self.tracks.append(new_track)
+            new_track.node_a.connections.add(new_track)
+            new_track.node_b.connections.add(new_track)
             return
 
         track_invalid = False
@@ -184,18 +201,24 @@ class Network:
                     pass
                 elif isinstance(track, CurvedTrack):
                     split_angle = Geom.full_angle_to_horizon(intersection - track.center)
-                    track_a = CurvedTrack(self.canvas, track.node_a, node_split, track.center, track.radius, track.start_angle, split_angle)
+                    track_a = CurvedTrack(self.canvas, track.node_a, node_split, track.center, track.radius,
+                                          track.start_angle, split_angle)
                     track_b = CurvedTrack(self.canvas, track.node_b, node_split, track.center, track.radius,
                                           split_angle, track.stop_angle)
                     self._add_track(track_a, skip_check_node_a=True, skip_check_node_b=True, skip_check_intersections=True)
                     self._add_track(track_b, skip_check_node_a=True, skip_check_node_b=True,
                                     skip_check_intersections=True)
+                break
 
         for track in track_to_remove:
             self.tracks.remove(track)
+            track.node_a.connections.remove(track)
+            track.node_b.connections.remove(track)
 
         if not track_invalid:
             self.tracks.append(new_track)
+            new_track.node_a.connections.add(new_track)
+            new_track.node_b.connections.add(new_track)
 
     def _is_valid_intersection(self, coord: pygame.Vector2):
         for node in self.nodes:
@@ -227,6 +250,7 @@ class Network:
 
         start_angle = Geom.full_angle_to_horizon(start_vector)
         stop_angle = Geom.full_angle_to_horizon(stop_vector)
+        new_node = Node(self.canvas, center_position + stop_vector * options.radius)
 
         if options.direction is Direction.LEFT and start_angle > stop_angle:
             pass
@@ -235,9 +259,13 @@ class Network:
             start_angle = stop_angle
             stop_angle = temp
 
-        new_node = Node(self.canvas, center_position + stop_vector * options.radius)
         new_track = CurvedTrack(self.canvas, source_node, new_node, center_position, options.radius,
                                 start_angle, stop_angle)
+
+        if new_track.id == 3:
+            Debug.line(center_position, new_node.position)
+            Debug.line(center_position, center_position + VectorUtil.from_angle(stop_angle) * 200, color=(0, 255, 0))
+
         return new_node, new_track
 
     def draw(self, surface):
