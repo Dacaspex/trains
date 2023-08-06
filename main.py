@@ -12,10 +12,10 @@ from gui import Gui
 
 pygame.init()
 
-# SCREEN_WIDTH    = 1000
-# SCREEN_HEIGHT   = 800
-SCREEN_WIDTH    = 1400
-SCREEN_HEIGHT   = 1000
+SCREEN_WIDTH    = 1000
+SCREEN_HEIGHT   = 800
+# SCREEN_WIDTH    = 1400
+# SCREEN_HEIGHT   = 1000
 GRID_DIMENSION  = 200
 CANVAS_OFFSET_X = 200
 CANVAS_OFFSET_Y = -200
@@ -32,17 +32,16 @@ Debug.canvas = canvas
 
 node1 = Node(canvas, pygame.Vector2(150, 50))
 node2 = Node(canvas, pygame.Vector2(200, 100))
-# node2 = Node(canvas, pygame.Vector2(400, 700))
-node3 = Node(canvas, pygame.Vector2(500, 50))
-node4 = Node(canvas, pygame.Vector2(350, 175))
 track1 = StraightTrack(canvas, node1, node2)
-track2 = StraightTrack(canvas, node3, node4)
-_, track4 = network.build_track(node2, track1, CurvedTrackOptions(Direction.LEFT, 400, math.pi / 3))
-# _, track4 = network.build_track(node2, track1, StraightTrackOptions(300))
-
 network.add_track(track1)
+
+node3 = Node(canvas, pygame.Vector2(500, 50))
+node4 = Node(canvas, pygame.Vector2(400, 150))
+track2 = StraightTrack(canvas, node3, node4)
 network.add_track(track2)
-# node5, track3 = network.build_track(node4, track2, StraightTrackOptions(300))
+
+_, track4 = network.build_track(node2, track1, CurvedTrackOptions(Direction.LEFT, 400, math.pi / 3))
+# _, track4 = network.build_track(node2, track1, StraightTrackOptions(500))
 node5, track3 = network.build_track(node4, track2, CurvedTrackOptions(Direction.RIGHT, 400, math.pi / 4))
 
 print(len(network.tracks))
